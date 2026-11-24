@@ -9,6 +9,8 @@ ARG GROCY_RELEASE
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="alex-phillips, homerr"
 
+COPY ./repo /app/www
+
 RUN \
   echo "**** install build packages ****" && \
   apk add --no-cache --virtual=build-dependencies \
@@ -26,17 +28,6 @@ RUN \
   sed -E -i 's/^;?clear_env ?=.*$/clear_env = no/g' /etc/php85/php-fpm.d/www.conf && \
   grep -qxF 'clear_env = no' /etc/php85/php-fpm.d/www.conf || echo 'clear_env = no' >> /etc/php85/php-fpm.d/www.conf && \
   echo "**** install grocy ****" && \
-  mkdir -p /app/www && \
-  if [ -z ${GROCY_RELEASE+x} ]; then \
-    GROCY_RELEASE=$(curl -sX GET "https://api.github.com/repos/grocy/grocy/releases/latest" \
-    | jq -r '.tag_name'); \
-  fi && \
-  curl -o \
-    /tmp/grocy.tar.gz -L \
-    "https://github.com/grocy/grocy/archive/${GROCY_RELEASE}.tar.gz" && \
-  tar xf \
-    /tmp/grocy.tar.gz -C \
-    /app/www/ --strip-components=1 && \
   cp -R /app/www/data/plugins \
     /defaults/plugins && \
   echo "**** install composer packages ****" && \
